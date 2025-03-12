@@ -1,0 +1,16 @@
+node_modules/
+.yarn/
+.yarnrc.yml
+.pnp.*
+.pnp/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+dist/
+build/
+.env
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.tsbuildinfo
