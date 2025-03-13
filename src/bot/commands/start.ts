@@ -5,6 +5,6 @@ import { type ICommand } from './types';
 
 export class StartCommand implements ICommand {
   public execute = async (ctx: Context<Update>): Promise<void> => {
-    await ctx.reply('Hi there !');
+    await ctx.reply('Hi there! Welcome to CopperX Payout!');
   };
 }
