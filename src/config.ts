@@ -3,6 +3,7 @@ export type IConfig = {
   server: { port: number };
   log: { output: string };
   api_base_url: { output: string};
+  redis_url: { output: string};
 };
 
 function initConfig(): IConfig {
@@ -10,7 +11,8 @@ function initConfig(): IConfig {
     BOT_TOKEN: process.env.BOT_TOKEN,
     SERVER_PORT: process.env.SERVER_PORT,
     LOGS_OUTPUT: process.env.LOGS_OUTPUT || 'logs.log',
-    API_BASE_URL: process.env.API_BASE_URL
+    API_BASE_URL: process.env.API_BASE_URL,
+    REDIS_URL:process.env.REDIS_URL
   } as const;
 
   const requiredEnvsNames = ['BOT_TOKEN'] as const;
@@ -36,6 +38,9 @@ function initConfig(): IConfig {
     api_base_url: {
       output: envs.API_BASE_URL!
     },
+    redis_url:{
+      output: envs.REDIS_URL!
+    }
   };
 
   return config;

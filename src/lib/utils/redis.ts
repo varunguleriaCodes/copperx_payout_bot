@@ -1,5 +1,6 @@
 import { createClient, type RedisClientType } from 'redis';
 
+import { CONFIG } from '../../config';
 export class RedisTokenService {
   private client: RedisClientType;
   private isConnected: boolean = false;
@@ -7,9 +8,8 @@ export class RedisTokenService {
 
   constructor() {
     this.client = createClient({
-      url: process.env.REDIS_URL || 'redis://localhost:6379',
-    });
-
+        url: typeof CONFIG.redis_url === 'string'? CONFIG.redis_url : CONFIG.redis_url?.output || 'redis://localhost:6379',
+      });
     this.setupConnection();
   }
 
@@ -86,53 +86,6 @@ export class RedisTokenService {
       return false;
     }
   }
-
-  /**
-   * Check if token exists and will expire soon (within 24 hours)
-   */
-  async isTokenExpiringSoon(userId: number): Promise<boolean> {
-    if (!this.isConnected) {
-      await this.setupConnection();
-    }
-
-    try {
-      // Get time to live in seconds
-      const ttl = await this.client.ttl(`token:${userId}`);
-      
-      // Check if token exists and will expire in less than 24 hours
-      const ONE_DAY_SECONDS = 24 * 60 * 60;
-      return ttl > 0 && ttl < ONE_DAY_SECONDS;
-    } catch (error) {
-      console.error('Error checking token expiration:', error);
-      return false;
-    }
-  }
-
-  /**
-   * Refresh token expiration time (extend for another week)
-   */
-  async refreshTokenExpiration(userId: number): Promise<boolean> {
-    if (!this.isConnected) {
-      await this.setupConnection();
-    }
-
-    try {
-      // Get the current token
-      const token = await this.getToken(userId);
-      
-      if (!token) {
-        return false;
-      }
-      
-      // Reset expiration to one week
-      await this.client.expire(`token:${userId}`, this.FIVE_DAY_SECONDS);
-      return true;
-    } catch (error) {
-      console.error('Error refreshing token expiration:', error);
-      return false;
-    }
-  }
-
   /**
    * Gracefully close Redis connection
    */
@@ -144,5 +97,4 @@ export class RedisTokenService {
   }
 }
 
-// Create a singleton instance
 export const tokenService = new RedisTokenService();

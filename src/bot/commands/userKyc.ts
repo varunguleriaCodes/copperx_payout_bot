@@ -1,28 +1,24 @@
 import { type Context } from 'telegraf';
 import { type Update } from 'telegraf/typings/core/types/typegram';
 
-import { authApi } from '../api_calls/apiEndpoint';
+import { kycApi } from '../api_calls/apiEndpoint';
 import { apiService } from '../api_calls/centralizedApiCalls';
 
 import { type ICommand } from './types';
-export class UserDetailsCommand implements ICommand {
+export class UserKycCommand implements ICommand {
   public execute = async (ctx: Context<Update>): Promise<void> => {
     const existingToken = await ctx.getToken();
     if (existingToken) {
       apiService.setAuthToken(existingToken)
       try{
-      const userData = await authApi.userDetails();
-      if('id' in userData){
-      ctx.reply(`User Account Details:
-                \n-Status: ${userData.status}
-                \n-Email: ${userData.email}
-                \n-Role: ${userData.role}
-                \n-Wallet Address: ${userData.walletAddress}
-                \n-Wallet Type: ${userData.walletAccountType}
-                \n-Organization ID: ${userData.organizationId}
-                \n-Wallet ID: ${userData.walletId}`
-                );
-            }
+      const userkycData = await kycApi.userStatus();
+      console.log(userkycData)
+      if('hasMore' in userkycData && userkycData.data.length>0){
+        ctx.reply(`KYC Status: ${userkycData.data[0].status}`)
+      }
+      else{
+        ctx.reply('Please start your kyc first, to get details!!')
+      }
         }
         catch{
             ctx.reply('Facing Some issue while trying to fetch details! Try again later!')

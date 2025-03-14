@@ -1,5 +1,5 @@
 // api/endpoints.ts
-import { ISuccessResponseVerifyOtp, IVerifyData, type IErrorResponse,type ISuccessResponseSendOtp } from '../commands/types';
+import { type ISuccessResponseVerifyOtp, type IVerifyData, type IErrorResponse,type ISuccessResponseSendOtp,type IUser,type ISuccessDetailskyc, type IWallet, type IWalletBalance } from '../commands/types';
 
 import { apiService, type IRequestOptions } from './centralizedApiCalls';
 
@@ -8,7 +8,17 @@ import { apiService, type IRequestOptions } from './centralizedApiCalls';
 export const API_PATHS = {
   auth: {
     sendOtp: '/api/auth/email-otp/request',
-    verifyOtp: '/api/auth/email-otp/authenticate'
+    verifyOtp: '/api/auth/email-otp/authenticate',
+    userDetails:'/api/auth/me'
+  },
+  kyc:{
+    userStatus: '/api/kycs'
+  },
+  wallet:{
+    getWallets: '/api/wallets',
+    getBalances: '/api/wallets/balances',
+    setdefaultWallet: '/api/wallets/default',
+    getDefaultWallet: '/api/wallets/default',
   }
 };
 
@@ -29,16 +39,66 @@ export const authApi = {
         } catch (error) {
           return error as IErrorResponse; 
         }
-    }      
-  
+    },      
+    userDetails: async( options?: IRequestOptions): Promise<IUser | IErrorResponse> =>{
+        try {       
+          const response = await apiService.get<IUser>(API_PATHS.auth.userDetails, options);
+          return response.data as IUser;
+        } catch (error) {
+          return error as IErrorResponse; 
+        }
+    }   
 };
 
+export const kycApi = {    
+  userStatus: async( options?: IRequestOptions): Promise<ISuccessDetailskyc | IErrorResponse> =>{
+      try {       
+        const response = await apiService.get<ISuccessDetailskyc>(API_PATHS.kyc.userStatus, options);
+        return response.data as ISuccessDetailskyc;
+      } catch (error) {
+        return error as IErrorResponse; 
+      }
+  }   
+};
 
+export const walletApi = {
+  getWallets: async( options?: IRequestOptions): Promise<IWallet[] | IErrorResponse> =>{
+    try {       
+      const response = await apiService.get<IWallet[]>(API_PATHS.wallet.getWallets, options);
+      return response.data as IWallet[];
+    } catch (error) {
+      return error as IErrorResponse; 
+    }
+  }, 
+
+  getBalances: async( options?: IRequestOptions): Promise<IWalletBalance | IErrorResponse> =>{
+    try {       
+      const response = await apiService.get<IWalletBalance>(API_PATHS.wallet.getWallets, options);
+      return response.data as IWalletBalance;
+    } catch (error) {
+      return error as IErrorResponse; 
+    }
+  },
+  setdefaultWallet: async (walletId: string, options?: IRequestOptions): Promise<IWallet | IErrorResponse> => {
+    try {
+      const response = await apiService.post<IWallet>(API_PATHS.wallet.setdefaultWallet, { walletId }, options);
+      return response.data as IWallet;
+    } catch (error) {
+      return error as IErrorResponse; 
+    }
+  },
+  getDefaultWallet: async( options?: IRequestOptions): Promise<IWallet | IErrorResponse> =>{
+    try {       
+      const response = await apiService.get<IWallet>(API_PATHS.wallet.getWallets, options);
+      return response.data as IWallet;
+    } catch (error) {
+      return error as IErrorResponse; 
+    }
+  }, 
+}
 // Export all APIs as a single object for convenience
 export const api = {
   auth: authApi,
+  kyc: kycApi,
+  wallet: walletApi
 };
-
-// This ensures AuthService is used or explicitly exported
-// If you're not using it, you can remove it entirely
-export { authApi as AuthService };
