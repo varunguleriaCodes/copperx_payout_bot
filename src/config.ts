@@ -4,6 +4,9 @@ export type IConfig = {
   log: { output: string };
   api_base_url: { output: string};
   redis_url: { output: string};
+  pusher_key: { output: string};
+  pusher_cluster: {output: string};
+  organization_id:{output:string}
 };
 
 function initConfig(): IConfig {
@@ -12,7 +15,10 @@ function initConfig(): IConfig {
     SERVER_PORT: process.env.SERVER_PORT,
     LOGS_OUTPUT: process.env.LOGS_OUTPUT || 'logs.log',
     API_BASE_URL: process.env.API_BASE_URL,
-    REDIS_URL:process.env.REDIS_URL
+    REDIS_URL:process.env.REDIS_URL,
+    PUSHER_KEY:process.env.PUSHER_KEY,
+    PUSHER_CLUSTER:process.env.PUSHER_CLUSTER,
+    ORGANIZATION_ID:process.env.ORGANIZATION_ID,
   } as const;
 
   const requiredEnvsNames = ['BOT_TOKEN'] as const;
@@ -40,6 +46,15 @@ function initConfig(): IConfig {
     },
     redis_url:{
       output: envs.REDIS_URL!
+    },
+    pusher_key: {
+       output: envs.PUSHER_KEY!
+    },
+    pusher_cluster: {
+       output: envs.PUSHER_CLUSTER!
+    },
+    organization_id:{
+       output:envs.ORGANIZATION_ID!
     }
   };
 

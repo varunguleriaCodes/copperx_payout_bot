@@ -1,5 +1,21 @@
 // api/endpoints.ts
-import { type ISuccessResponseVerifyOtp, type IVerifyData, type IErrorResponse,type ISuccessResponseSendOtp,type IUser,type ISuccessDetailskyc, type IWallet, type IWalletBalance } from '../commands/types';
+import { type ISuccessResponseVerifyOtp, 
+         type IVerifyData, 
+         type IErrorResponse,
+         type ISuccessResponseSendOtp,
+         type IUser,
+         type ISuccessDetailskyc, 
+         type IWallet, 
+         type IWalletBalance, 
+         type INotificationRequestData, 
+         type INotificationSuccessResponse, 
+         type ITransferListing,
+         type ITransferInputPayment,
+         type ITransferSendResponse,
+         type IWalletTransfer,
+         type IInvoiceDetails,
+         type IResponseList,
+         type IRequestList} from '../commands/types';
 
 import { apiService, type IRequestOptions } from './centralizedApiCalls';
 
@@ -19,6 +35,16 @@ export const API_PATHS = {
     getBalances: '/api/wallets/balances',
     setdefaultWallet: '/api/wallets/default',
     getDefaultWallet: '/api/wallets/default',
+  },
+  transfer:{
+    emailTransfer: '/api/transfers/send',
+    walletTransfer: '/api/transfers/wallet-withdraw',
+    bankWithdrawal: '/api/transfers/offramp',
+    bulkTransfers: '/api/transfers/send-batch',
+    transferListing: '/api/transfers?page=1&limit=10'
+  },
+  notification:{
+    pusherAuth: '/api/notifications/auth'
   }
 };
 
@@ -71,10 +97,10 @@ export const walletApi = {
     }
   }, 
 
-  getBalances: async( options?: IRequestOptions): Promise<IWalletBalance | IErrorResponse> =>{
+  getBalances: async( options?: IRequestOptions): Promise<IWalletBalance[] | IErrorResponse> =>{
     try {       
-      const response = await apiService.get<IWalletBalance>(API_PATHS.wallet.getWallets, options);
-      return response.data as IWalletBalance;
+      const response = await apiService.get<IWalletBalance[]>(API_PATHS.wallet.getBalances, options);
+      return response.data as IWalletBalance[];
     } catch (error) {
       return error as IErrorResponse; 
     }
@@ -89,16 +115,72 @@ export const walletApi = {
   },
   getDefaultWallet: async( options?: IRequestOptions): Promise<IWallet | IErrorResponse> =>{
     try {       
-      const response = await apiService.get<IWallet>(API_PATHS.wallet.getWallets, options);
+      const response = await apiService.get<IWallet>(API_PATHS.wallet.getDefaultWallet, options);
       return response.data as IWallet;
     } catch (error) {
       return error as IErrorResponse; 
     }
   }, 
 }
+
+export const notificationApi = {
+  pusherAuth: async (data: INotificationRequestData, options?: IRequestOptions): Promise<INotificationSuccessResponse | IErrorResponse> => {
+      try {
+        const response = await apiService.post<INotificationSuccessResponse>(API_PATHS.notification.pusherAuth, { ...data }, options);
+        return response.data as INotificationSuccessResponse;
+      } catch (error) {
+        return error as IErrorResponse; 
+      }
+    }  
+};
+
+export const transferApi = {
+  transferListing: async( options?: IRequestOptions): Promise<ITransferListing | IErrorResponse> =>{
+    try {       
+      const response = await apiService.get<ITransferListing>(API_PATHS.transfer.transferListing, options);
+      return response.data as ITransferListing;
+    } catch (error) {
+      return error as IErrorResponse; 
+    }
+  },
+  emailTransfer: async(data:ITransferInputPayment,  options?: IRequestOptions): Promise<ITransferSendResponse | IErrorResponse> =>{
+    try {
+      const response = await apiService.post<ITransferSendResponse>(API_PATHS.transfer.emailTransfer, { ...data }, options);
+      return response.data as ITransferSendResponse;
+    } catch (error) {
+      return error as IErrorResponse; 
+    }
+  },
+  walletTransfer: async(data:IWalletTransfer,  options?: IRequestOptions): Promise<ITransferSendResponse | IErrorResponse> =>{
+    try {
+      const response = await apiService.post<ITransferSendResponse>(API_PATHS.transfer.walletTransfer, { ...data }, options);
+      return response.data as ITransferSendResponse;
+    } catch (error) {
+      return error as IErrorResponse; 
+    }
+  },
+  bankWithdrawal: async(data:IInvoiceDetails,  options?: IRequestOptions): Promise<ITransferSendResponse | IErrorResponse> =>{
+    try {
+      const response = await apiService.post<ITransferSendResponse>(API_PATHS.transfer.bankWithdrawal, { ...data }, options);
+      return response.data as ITransferSendResponse;
+    } catch (error) {
+      return error as IErrorResponse; 
+    }
+  },
+  bulkTransfers: async(data:IRequestList,  options?: IRequestOptions): Promise<IResponseList | IErrorResponse> =>{
+    try {
+      const response = await apiService.post<IResponseList>(API_PATHS.transfer.bulkTransfers, { ...data }, options);
+      return response.data as IResponseList;
+    } catch (error) {
+      return error as IErrorResponse; 
+    }
+  },
+}
 // Export all APIs as a single object for convenience
 export const api = {
   auth: authApi,
   kyc: kycApi,
-  wallet: walletApi
+  wallet: walletApi,
+  notification:notificationApi,
+  transfer:transferApi
 };
