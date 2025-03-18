@@ -15,106 +15,82 @@ export class LoginCommand implements ICommand {
   }
   
   private setupListeners(): void {
-    // Step 1: Ask for Email
-    this.bot.hears(/^[^\s@]+@[^\s@]+\.[^\s@]+$/, async (ctx) => {
-      const userId = ctx.from?.id;
-      if (!userId) return;
-      
-      // Check if user is already logged in
-      const existingToken = await ctx.getToken();
-      if (existingToken) {
-        ctx.reply('✅ You are already logged in.');
-        return;
+    // Message handler for login flow
+    this.bot.on('message', async (ctx, next) => {
+      if (!ctx.message || !('text' in ctx.message) || !ctx.from) {
+        return next();
       }
       
-      const userEmail = ctx.message.text.trim();
-      if (!this.isValidEmail(userEmail)) {
-        ctx.reply('❌ Invalid email format. Please enter a valid email address.');
-        return;
-      }
-      
-      try {
-        const otpCallResponse = await authApi.sendOtp(userEmail);
-        if ('email' in otpCallResponse) {
-          ctx.reply(`📩 OTP sent to ${otpCallResponse.email}. Please enter the OTP:`);
-          this.userState.set(userId, {
-            email: otpCallResponse.email,
-            sid: otpCallResponse.sid,
-            step: 'awaitingOtp'
-          });
-        } else {
-          ctx.reply('❌ Failed to send OTP. Please try again later.');
-        }
-      } catch (error) {
-        ctx.reply('⚠️ An error occurred while sending OTP.');
-        console.error('OTP Send Error:', error);
-      }
-    });
-    
-    // Step 2: Expect OTP after email is entered
-    this.bot.hears(/^\d{6}$/, async (ctx) => {
-      const userId = ctx.from?.id;
-      if (!userId) return;
-      
-      // Check if user is already logged in
-      const existingToken = await ctx.getToken();
-      if (existingToken) {
-        ctx.reply('✅ You are already logged in.');
-        return;
-      }
-      
+      const userId = ctx.from.id;
+      const messageText = ctx.message.text;
       const userData = this.userState.get(userId);
-      if (!userData || userData.step !== 'awaitingOtp') {
-        ctx.reply('⚠️ Please enter your email first.');
-        return;
+      
+      // If user is not in login flow or has completed it, pass to next middleware
+      if (!userData || userData.step === 'done') {
+        return next();
       }
       
-      try {
-        const params: IVerifyData = {
-          email: userData.email!,
-          sid: userData.sid!,
-          otp: ctx.message.text.trim()
-        };
-        const verifyOtpResponse = await authApi.verifyOtp(params);
-        
-        if ('accessToken' in verifyOtpResponse) {
-          await ctx.saveToken(verifyOtpResponse.accessToken);
-          ctx.reply('✅ OTP verified successfully! You are now logged in.');
-          this.userState.set(userId, { step: 'done' });
+      // Step 1: Process email input
+      if (userData.step === 'awaitingEmail') {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (emailRegex.test(messageText)) {
+          try {
+            const otpCallResponse = await authApi.sendOtp(messageText);
+            if ('email' in otpCallResponse) {
+              ctx.reply(`📩 OTP sent to ${otpCallResponse.email}. Please enter the OTP:`);
+              this.userState.set(userId, {
+                email: otpCallResponse.email,
+                sid: otpCallResponse.sid,
+                step: 'awaitingOtp'
+              });
+            } else {
+              ctx.reply('❌ Failed to send OTP. Please try again later.');
+            }
+          } catch (error) {
+            ctx.reply('⚠️ An error occurred while sending OTP.');
+            console.error('OTP Send Error:', error);
+          }
         } else {
-          ctx.reply('❌ OTP verification failed! Please try again.');
+          ctx.reply('❌ Invalid email format. Please enter a valid email address.');
         }
-      } catch (error) {
-        ctx.reply('⚠️ An error occurred during OTP verification.');
-        console.error('OTP Verification Error:', error);
-      }
-    });
-    
-    // Handle any other input - make this a lower priority handler
-    this.bot.hears('text', async (ctx) => {
-      const userId = ctx.from?.id;
-      if (!userId) return;
-      
-      // Check if user is already logged in - ALWAYS CHECK FIRST
-      const existingToken = await ctx.getToken();
-      if (existingToken) {
-        ctx.reply('✅ You are already logged in.');
-        // Don't respond to further messages if already logged in
-        return;
+        return; // Stop processing further handlers
       }
       
-      const userData = this.userState.get(userId);
+      // Step 2: Process OTP input
+      if (userData.step === 'awaitingOtp') {
+        const otpRegex = /^\d{6}$/;
+        if (otpRegex.test(messageText)) {
+          try {
+            const params: IVerifyData = {
+              email: userData.email!,
+              sid: userData.sid!,
+              otp: messageText
+            };
+            const verifyOtpResponse = await authApi.verifyOtp(params);
             
-      if (!userData) {
-        ctx.reply('🔹 Please enter your email to begin the login process.');
-      } else if (userData.step === 'awaitingOtp') {
-        ctx.reply('🔹 Please enter the OTP sent to your email.');
-      } else if (userData.step === 'done') {
-        // User is done with login process
-        return;
-      } else {
-        ctx.reply('❌ Invalid input. Please enter a valid email address.');
+            if ('accessToken' in verifyOtpResponse) {
+              await ctx.saveToken(verifyOtpResponse.accessToken);
+              ctx.reply('✅ OTP verified successfully! You are now logged in.');
+              this.userState.set(userId, { step: 'done' });
+              setTimeout(() => {
+                // Clean up state after a delay
+                this.userState.delete(userId);
+              }, 5000);
+            } else {
+              ctx.reply('❌ OTP verification failed! Please try again.');
+            }
+          } catch (error) {
+            ctx.reply('⚠️ An error occurred during OTP verification.');
+            console.error('OTP Verification Error:', error);
+          }
+        } else {
+          ctx.reply('🔹 Please enter the 6-digit OTP sent to your email.');
+        }
+        return; // Stop processing further handlers
       }
+      
+      // If we reach here, proceed to next middleware
+      return next();
     });
   }
   
@@ -130,13 +106,11 @@ export class LoginCommand implements ICommand {
       ctx.reply('✅ You are already logged in.');
       return;
     }
-        
+    
+    // Clean up any existing state for this user
+    this.userState.delete(ctx.from.id);
+    
     ctx.reply('📧 Please enter your email to verify:');
     this.userState.set(ctx.from.id, { step: 'awaitingEmail' });
   };
-  
-  private isValidEmail(email: string): boolean {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  }
 }
