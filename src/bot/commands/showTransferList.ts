@@ -15,16 +15,16 @@ export class TransferListCommand implements ICommand {
       const userTransferData = await transferApi.transferListing();
       console.log(userTransferData)
       if('data' in userTransferData && userTransferData.data.length>0){
-      let message = '📋 *Last Transactions:*\n\n';
+      let message = 'Last Transactions:*\n\n';
       userTransferData.data.forEach((transaction:ITransfer, index:number) => {
-      message += `🔹 *Transaction ${index + 1}*\n`;
-      message += `🆔 ID: \`${transaction.id}\`\n`;
-      message += `📅 Date: ${new Date(transaction.createdAt).toLocaleString()}\n`;
-      message += `✅ Status: *${transaction.status}*\n`;
-      message += `💰 Amount: *${transaction.amount} ${transaction.currency}*\n`;
-      message += `📌 Type: ${transaction.type}\n`;
-      message += `🔄 Mode: ${transaction.mode}\n`;
-      message += `👤 Sender: ${transaction.senderDisplayName}\n\n`;
+      message += `Transaction ${index + 1}*\n`;
+      message += `ID: \`${transaction.id}\`\n`;
+      message += `Date: ${new Date(transaction.createdAt).toLocaleString()}\n`;
+      message += `Status: *${transaction.status}*\n`;
+      message += `Amount: *${transaction.amount} ${transaction.currency}*\n`;
+      message += `Type: ${transaction.type}\n`;
+      message += `Mode: ${transaction.mode}\n`;
+      message += `Sender: ${transaction.senderDisplayName}\n\n`;
       });
 
     ctx.reply(message);

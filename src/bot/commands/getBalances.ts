@@ -14,23 +14,28 @@ export class GetBalancesCommand implements ICommand {
       const userBalancesData = await walletApi.getBalances();
       console.log(userBalancesData)
       if (Array.isArray(userBalancesData) && userBalancesData.length > 0) {
+        let combinedMessage = '';
         userBalancesData.forEach(wallet => {
             if ('walletId' in wallet) {
+                let walletMessage = `Wallet ID: ${wallet.walletId} (${wallet.network})\n`;
+                
                 if (Array.isArray(wallet.balances) && wallet.balances.length > 0) {
-                    let balanceMessage = `Wallet ID: ${wallet.walletId} (${wallet.network})\nYour balances:\n`;
-    
-                    wallet?.balances?.forEach((balance:IBalance) => {
-                        balanceMessage += `🔹 ${balance.symbol}: ${parseFloat(balance.balance).toFixed(balance.decimals)} (Decimals: ${balance.decimals})\n`;
+                    walletMessage += 'Your balances:\n';
+                    
+                    wallet.balances.forEach((balance: IBalance) => {
+                        walletMessage += `${balance.symbol}: ${parseFloat(balance.balance).toFixed(balance.decimals)} (Decimals: ${balance.decimals})\n`;
                     });
-    
-                    ctx.reply(balanceMessage);
                 } else {
-                    ctx.reply(`Wallet ID: ${wallet.walletId} (${wallet.network})\nYou don't have any balance!!`);
+                    walletMessage += 'You don\'t have any balance!!\n';
                 }
+                
+                combinedMessage += walletMessage + '\n';
             } else {
-                ctx.reply('No wallet information found.');
+                combinedMessage += 'No wallet information found.\n\n';
             }
         });
+        
+        ctx.reply(combinedMessage.trim());
     } else {
         ctx.reply('No wallets found.');
     }

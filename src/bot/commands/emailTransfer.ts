@@ -27,12 +27,10 @@ export class EmailTransfer implements ICommand {
       const userData = this.userState.get(userId) || { step: 0 };
       const message = ctx.message.text.trim();
 
-      // Skip if the user is trying to use another command
       if (message.startsWith('/') && message !== '/cancel') {
         return next();
       }
 
-      // Handle cancellation
       if (message === '/cancel') {
         this.activeUsers.delete(userId);
         this.userState.delete(userId);
@@ -43,27 +41,27 @@ export class EmailTransfer implements ICommand {
       switch (userData.step) {
         case 1:
           this.userState.set(userId, { ...userData, walletAddress: message, step: 2 });
-          await ctx.reply('📧 Enter email address:');
+          await ctx.reply('Enter email address:');
           break;
         case 2:
           this.userState.set(userId, { ...userData, email: message, step: 3 });
-          await ctx.reply('🆔 Enter payee ID:');
+          await ctx.reply('Enter payee ID:');
           break;
         case 3:
           this.userState.set(userId, { ...userData, payeeId: message, step: 4 });
-          await ctx.reply('💰 Enter amount:');
+          await ctx.reply('Enter amount:');
           break;
         case 4:
           this.userState.set(userId, { ...userData, amount: message, step: 5 });
-          await ctx.reply('🎯 Enter purpose code:');
+          await ctx.reply('Enter purpose code:');
           break;
         case 5:
           this.userState.set(userId, { ...userData, purposeCode: message, step: 6 });
-          await ctx.reply('💱 Enter currency:');
+          await ctx.reply('Enter currency:');
           break;
         case 6:
           userData.currency = message;
-          await ctx.reply('✅ Sending transfer request...');
+          await ctx.reply('Sending transfer request...');
 
           try {
             const existingToken = await ctx.getToken();
@@ -94,7 +92,6 @@ export class EmailTransfer implements ICommand {
           break;
       }
       
-      // Don't call next() here to prevent other handlers from processing this message
     });
   }
 
@@ -108,7 +105,7 @@ export class EmailTransfer implements ICommand {
     this.activeUsers.add(userId);
     this.userState.set(userId, { step: 1 });
     
-    await ctx.reply('💳 Initiating transfer. Enter wallet address:');
+    await ctx.reply('Initiating transfer. Enter wallet address:');
     await ctx.reply('Type /cancel at any time to quit the process.');
   };
 }

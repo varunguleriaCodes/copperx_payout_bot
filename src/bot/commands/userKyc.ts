@@ -26,7 +26,7 @@ export class UserKycCommand implements ICommand {
       return;
     }
     else{
-        ctx.reply('Please Login First! Access Token has expired.')
+        ctx.reply('Please Login First!')
         return;
     }
     

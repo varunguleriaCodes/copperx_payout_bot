@@ -27,12 +27,10 @@ export class WalletTransferCommand implements ICommand {
       const userData = this.userState.get(userId) || { step: 0, data: {} };
       const message = ctx.message.text.trim();
 
-      // Skip if user is trying to use another command
       if (message.startsWith('/') && message !== '/cancel') {
         return next();
       }
 
-      // Handle cancellation
       if (message === '/cancel') {
         this.activeUsers.delete(userId);
         this.userState.delete(userId);
@@ -43,22 +41,22 @@ export class WalletTransferCommand implements ICommand {
       switch (userData.step) {
         case 1:
           userData.data!.walletAddress = message;
-          await ctx.reply('💰 Enter amount:');
+          await ctx.reply('Enter amount:');
           this.userState.set(userId, { step: 2, data: userData.data });
           break;
         case 2:
           userData.data!.amount = message;
-          await ctx.reply('🎯 Enter purpose code:');
+          await ctx.reply('Enter purpose code:');
           this.userState.set(userId, { step: 3, data: userData.data });
           break;
         case 3:
           userData.data!.purposeCode = message;
-          await ctx.reply('💱 Enter currency:');
+          await ctx.reply('Enter currency:');
           this.userState.set(userId, { step: 4, data: userData.data });
           break;
         case 4:
           userData.data!.currency = message;
-          await ctx.reply('✅ Sending wallet transfer request...');
+          await ctx.reply('Sending wallet transfer request...');
           
           try {
             const existingToken = await ctx.getToken();
@@ -88,14 +86,12 @@ export class WalletTransferCommand implements ICommand {
           this.userState.delete(userId);
           break;
       }
-      
-      // Don't call next() here to prevent other handlers from processing this message
     });
   }
 
   public execute = async (ctx: Context): Promise<void> => {
     if (!ctx.from) {
-      await ctx.reply('⚠️ An error occurred. Please try again.');
+      await ctx.reply('An error occurred. Please try again.');
       return;
     }
     
@@ -103,7 +99,6 @@ export class WalletTransferCommand implements ICommand {
     this.activeUsers.add(userId);
     this.userState.set(userId, { step: 1, data: {} });
     
-    await ctx.reply('📋 Enter your wallet address:');
-    await ctx.reply('Type /cancel at any time to quit the process.');
+    await ctx.reply('Enter your wallet address:');
   };
 }

@@ -25,12 +25,11 @@ export class GetWalletCommand implements ICommand {
         return;
     }
 
-    // Process and display wallet details
     const walletDetails = userWalletData.map(wallet => 
-        `🔹 **Wallet Type**: ${wallet.walletType}\n` +
-        `🔹 **Network**: ${wallet.network}\n` +
-        `🔹 **Wallet Address**: ${wallet.walletAddress}\n` +
-        `🔹 **Default**: ${wallet.isDefault ? '✅ Yes' : '❌ No'}`
+        `Wallet Type: ${wallet.walletType}\n` +
+        `Network: ${wallet.network}\n` +
+        `Wallet Address: ${wallet.walletAddress}\n` +
+        `Default: ${wallet.isDefault ? '✅ Yes' : '❌ No'}`
     ).join('\n\n');
 
     ctx.reply(`Here are your wallets:\n\n${walletDetails}`);

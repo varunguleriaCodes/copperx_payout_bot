@@ -8,6 +8,7 @@ import { EmailTransfer } from './commands/emailTransfer';
 import { GetBalancesCommand } from './commands/getBalances';
 import { GetDefaultWalletCommand } from './commands/getDefaultWallet';
 import { GetWalletCommand } from './commands/getWallets';
+import { HelpCommand } from './commands/help';
 import { LoginCommand } from './commands/login';
 import { SetDefaultWalletCommand } from './commands/setDefaultWallet';
 import { TransferListCommand } from './commands/showTransferList';
@@ -18,6 +19,7 @@ import { WalletTransferCommand } from './commands/walletTransfer';
 import { logMiddleware } from './middlwares/log';
 import { redisAuthMiddleware } from './middlwares/redisMiddleware';
 import { pusherClient } from './pusherClient'; 
+
 export function createBot(token: string) {
   const bot = new Telegraf(token);
   bot.use(logMiddleware);
@@ -42,20 +44,21 @@ export function createBot(token: string) {
   const walletTransferCommand= new WalletTransferCommand(bot);
   const bulkTransfersCommand= new BulkTransfersCommand(bot);
   const bankWithdrawalCommand= new BankWithdrawalCommand(bot);
+  const helpCommand = new HelpCommand();
 
   bot.start(startCommand.execute);
   bot.command('login',loginCommand.execute);
   bot.command('user',userDetailsCommand.execute);
   bot.command('kyc',kycCommand.execute);
-  bot.command('setwallet',setDefaultWalletCommand.execute);
+  bot.command('setdefaultwallet',setDefaultWalletCommand.execute);
   bot.command('balance',getBalancesCommand.execute);
   bot.command('defaultwallet',getDefaultWalletCommand.execute);
   bot.command('wallets',getWallets.execute);
-  bot.command('transferlist',transferListCommand.execute);
-  bot.command('emailtransfer',emailTransfer.execute);
+  bot.command('transfers',transferListCommand.execute);
+  bot.command('transfer',emailTransfer.execute);
   bot.command('wallettransfer',walletTransferCommand.execute);
   bot.command('bulktransfer',bulkTransfersCommand.execute);
-  bot.command('bankwithdrawal',bankWithdrawalCommand.execute);
-
+  bot.command('withdraw',bankWithdrawalCommand.execute);
+  bot.command('help',helpCommand.execute);
   return bot;
 }

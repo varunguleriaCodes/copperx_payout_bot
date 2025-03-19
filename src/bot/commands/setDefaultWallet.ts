@@ -16,31 +16,31 @@ export class SetDefaultWalletCommand implements ICommand {
     public execute = async (ctx: Context<Update>): Promise<void> => {
         await ctx.reply('Please Choose the default Wallet');
 
-        this.bot.hears(/.+/, async (ctx) => {
-            console.log('17777');
+        this.bot.on('text', async (ctx) => {
+            if (!ctx.message || !ctx.message.text) return;
 
-            const existingToken = await ctx.getToken(); // Ensuring `getToken` is accessed correctly
-            
-            if (existingToken) {
-                apiService.setAuthToken(existingToken);
-                try {
-                    const walletId = ctx.message.text; 
-                    const userWalletData = await walletApi.setdefaultWallet(walletId);
-                    console.log(userWalletData);
+            const existingToken = await ctx.getToken();
 
-                    if ('id' in userWalletData) {
-                        await ctx.reply('Default Wallet Updated!');
-                    } else {
-                        await ctx.reply('Unable to update Default Wallet! Please try again later!');
-                    }
-                } catch (error) {
-                    console.error('Error fetching details:', error);
-                    await ctx.reply('Facing some issue while trying to fetch details! Try again later!');
-                }
-                return;
-            } else {
+            if (!existingToken) {
                 await ctx.reply('Please Login First! Access Token has expired.');
                 return;
+            }
+
+            apiService.setAuthToken(existingToken);
+
+            try {
+                const walletId = ctx.message.text; 
+                const userWalletData = await walletApi.setdefaultWallet(walletId);
+                console.log(userWalletData);
+
+                if ('id' in userWalletData) {
+                    await ctx.reply('Default Wallet Updated!');
+                } else {
+                    await ctx.reply('Unable to update Default Wallet! Please try again later!');
+                }
+            } catch (error) {
+                console.error('Error fetching details:', error);
+                await ctx.reply('Facing some issue while trying to fetch details! Try again later!');
             }
         });
     };

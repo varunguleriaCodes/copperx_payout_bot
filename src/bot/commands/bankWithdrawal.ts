@@ -88,7 +88,6 @@ export class BankWithdrawalCommand implements ICommand {
     this.activeUsers.add(userId);
     this.userState.set(userId, { step: 1 });
     
-    await ctx.reply('📋 Enter request data in JSON format:');
-    await ctx.reply('Type /cancel at any time to quit the process.');
+    await ctx.reply('Enter request data in JSON format:');
   };
 }
