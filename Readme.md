@@ -3,7 +3,7 @@
 <p><b>This bot enables users to deposit, withdraw, and transfer USDC directly through Telegram without visiting web app</b></p>
 
 ## Deployment
-Step 1- Install Yarn, Visit <a href="https://yarnpkg.com/getting-started/install">Yarn</a> Website for details, Yarn version 4.6.0 is used for development.
+Step 1- Install Yarn, Visit <a href="https://classic.yarnpkg.com/en/docs">Yarn</a> Website for details, Yarn version 1.22.22 is used for development.
 
 Step 2 - Git Pull
 ```
