@@ -29,6 +29,9 @@ export class TransferListCommand implements ICommand {
 
     ctx.reply(message);
     }
+    else if('message' in userTransferData){
+      await ctx.reply(`Failed to fetch Details. Error Message : ${userTransferData.message}`)
+    }
     else{
         ctx.reply('No transactions yet!')
     }

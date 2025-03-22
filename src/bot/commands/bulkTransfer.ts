@@ -58,10 +58,13 @@ export class BulkTransfersCommand implements ICommand {
             console.log(response)
             if (Array.isArray(response) && response.length > 0 && 'responses' in response) {
               await ctx.reply('✅ Request submitted successfully!');
+            } else if('message' in response){
+              await ctx.reply(`Failed to fetch Details. Error Message : ${response.message}`)
             } else {
               await ctx.reply('❌ Request submission failed. Please try again.');
             }
           } catch (error) {
+            console.log(error);
             await ctx.reply('❌ Invalid JSON format. Please enter request data in valid JSON format.');
           }
           this.activeUsers.delete(userId);
@@ -80,7 +83,7 @@ export class BulkTransfersCommand implements ICommand {
 
   public execute = async (ctx: Context): Promise<void> => {
     if (!ctx.from) {
-      await ctx.reply('⚠️ An error occurred. Please try again.');
+      await ctx.reply('An error occurred. Please try again.');
       return;
     }
     
@@ -88,6 +91,6 @@ export class BulkTransfersCommand implements ICommand {
     this.activeUsers.add(userId);
     this.userState.set(userId, { step: 1 });
     
-    await ctx.reply('📋 Enter request data in JSON format:');
+    await ctx.reply('Enter request data in JSON format:');
   };
 }

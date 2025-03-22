@@ -15,7 +15,9 @@ export class UserKycCommand implements ICommand {
       console.log(userkycData)
       if('hasMore' in userkycData && userkycData.data.length>0){
         ctx.reply(`KYC Status: ${userkycData.data[0].status}`)
-      }
+      }else if('message' in userkycData){
+       await ctx.reply(`Failed to fetch Details. Error Message : ${userkycData.message}`)
+      } 
       else{
         ctx.reply('Please start your kyc first, to get details!!')
       }

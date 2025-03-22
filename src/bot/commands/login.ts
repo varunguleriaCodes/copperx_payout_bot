@@ -40,9 +40,9 @@ export class LoginCommand implements ICommand {
                 sid: otpCallResponse.sid,
                 step: 'awaitingOtp'
               });
-            } else {
-              ctx.reply('❌ Failed to send OTP. Please try again later.');
-            }
+            } else if('message' in otpCallResponse){
+             await ctx.reply(`Failed to fetch Details. Error Message : ${otpCallResponse.message}`)
+            } 
           } catch (error) {
             ctx.reply('⚠️ An error occurred while sending OTP.');
             console.error('OTP Send Error:', error);

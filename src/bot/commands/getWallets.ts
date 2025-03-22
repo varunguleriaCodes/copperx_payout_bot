@@ -1,11 +1,12 @@
 import { type Context } from 'telegraf';
 import { type Update } from 'telegraf/typings/core/types/typegram';
 
+import { NETWORK_MAP } from '../../config';
+
 import { walletApi } from '../api_calls/apiEndpoint';
 import { apiService } from '../api_calls/centralizedApiCalls';
 
 import { type ICommand } from './types';
-
 export class GetWalletCommand implements ICommand {
   public execute = async (ctx: Context<Update>): Promise<void> => {
     const existingToken = await ctx.getToken();
@@ -27,12 +28,11 @@ export class GetWalletCommand implements ICommand {
 
     const walletDetails = userWalletData.map(wallet => 
         `Wallet Type: ${wallet.walletType}\n` +
-        `Network: ${wallet.network}\n` +
-        `Wallet Address: ${wallet.walletAddress}\n` +
+        `Network: ${NETWORK_MAP[wallet.network]}\n` +
         `Default: ${wallet.isDefault ? '✅ Yes' : '❌ No'}`
     ).join('\n\n');
 
-    ctx.reply(`Here are your wallets:\n\n${walletDetails}`);
+   await ctx.reply(`Here are your wallets:\n\n${walletDetails}`);
         }
         catch{
             ctx.reply('Facing Some issue while trying to fetch details! Try again later!')

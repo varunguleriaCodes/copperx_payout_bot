@@ -1,15 +1,14 @@
 // api/apiService.ts
-import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, CancelToken } from 'axios';
+import axios, { type AxiosInstance, type AxiosResponse } from 'axios';
 
 import {CONFIG} from '../../config'
-// Types for API responses
+
 export interface IApiResponse<T> {
   data: T;
   status: number;
   message?: string;
 }
 
-// Fix the API_CONFIG to use a string for baseUrl
 const API_CONFIG = {
   baseUrl: CONFIG.api_base_url,
   defaultHeaders: {
@@ -19,12 +18,6 @@ const API_CONFIG = {
   timeout: 30000, // 30 seconds
 };
 
-// Interface for request options
-export interface IRequestOptions extends Omit<AxiosRequestConfig, 'url' | 'method' | 'data'> {
-  cancelToken?: CancelToken;
-}
-
-// The main API service class
 export class ApiService {
   private client: AxiosInstance;
   
@@ -91,29 +84,29 @@ export class ApiService {
   }
 
   // HTTP method implementations
-  async get<T>(endpoint: string, options?: IRequestOptions): Promise<IApiResponse<T>> {
-    const response = await this.client.get<T>(endpoint, options);
+  async get<T>(endpoint: string): Promise<IApiResponse<T>> {
+    const response = await this.client.get<T>(endpoint);
     return this.formatResponse<T>(response);
   }
 
-  async post<T>(endpoint: string, data: Record<string, unknown>, options?: IRequestOptions): Promise<IApiResponse<T>> {
-    console.log('POST Request:', { endpoint, data, options });
-    const response = await this.client.post<T>(endpoint, JSON.stringify(data), options);
+  async post<T>(endpoint: string, data: Record<string, unknown>): Promise<IApiResponse<T>> {
+    console.log('POST Request:', { endpoint, data });
+    const response = await this.client.post<T>(endpoint, JSON.stringify(data));
     return this.formatResponse<T>(response);
   }
 
-  async put<T>(endpoint: string, data: Record<string, unknown>, options?: IRequestOptions): Promise<IApiResponse<T>> {
-    const response = await this.client.put<T>(endpoint, data, options);
+  async put<T>(endpoint: string, data: Record<string, unknown>): Promise<IApiResponse<T>> {
+    const response = await this.client.put<T>(endpoint, data);
     return this.formatResponse<T>(response);
   }
 
-  async patch<T>(endpoint: string, data: Record<string, unknown>, options?: IRequestOptions): Promise<IApiResponse<T>> {
-    const response = await this.client.patch<T>(endpoint, data, options);
+  async patch<T>(endpoint: string, data: Record<string, unknown>): Promise<IApiResponse<T>> {
+    const response = await this.client.patch<T>(endpoint, data);
     return this.formatResponse<T>(response);
   }
 
-  async delete<T>(endpoint: string, options?: IRequestOptions): Promise<IApiResponse<T>> {
-    const response = await this.client.delete<T>(endpoint, options);
+  async delete<T>(endpoint: string): Promise<IApiResponse<T>> {
+    const response = await this.client.delete<T>(endpoint);
     return this.formatResponse<T>(response);
   }
 }
@@ -121,5 +114,4 @@ export class ApiService {
 // Create and export a default instance
 export const apiService = new ApiService();
 
-// Re-export for convenience
 export const { get, post, put, patch, delete: del } = apiService;

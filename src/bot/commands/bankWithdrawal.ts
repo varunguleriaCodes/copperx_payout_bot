@@ -27,7 +27,6 @@ export class BankWithdrawalCommand implements ICommand {
       const userData = this.userState.get(userId) || { step: 0 };
       const message = ctx.message.text.trim();
 
-      // Skip if user is trying to use another command
       if (message.startsWith('/') && message !== '/cancel') {
         return next();
       }
@@ -58,6 +57,8 @@ export class BankWithdrawalCommand implements ICommand {
             
             if (response && 'id' in response) {
               await ctx.reply('✅ Request submitted successfully!');
+            } else if('message' in response){
+              ctx.reply(`Failed to fetch Details. Error Message : ${response.message}`)
             } else {
               await ctx.reply('❌ Request submission failed. Please try again.');
             }

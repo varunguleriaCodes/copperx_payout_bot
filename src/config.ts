@@ -62,3 +62,10 @@ function initConfig(): IConfig {
 }
 
 export const CONFIG: IConfig = initConfig();
+
+export const NETWORK_MAP: Record<string, string> = {
+  '137': 'Polygon',
+  '42161': 'Arbitrum',
+  '8453': 'Base',
+  '23434': 'Starknet'
+};

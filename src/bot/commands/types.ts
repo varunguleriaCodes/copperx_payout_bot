@@ -10,7 +10,7 @@ export interface ISuccessResponseSendOtp {
 }
 
 export interface IErrorResponse{
-  message: Record<string, never>;
+  message: string | Record<string, never>;
   statusCode: number;
   error: string;
 }

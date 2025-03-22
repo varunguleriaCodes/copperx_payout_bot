@@ -9,7 +9,7 @@ export class WalletTransferCommand implements ICommand {
   private bot: Telegraf;
   private userState: Map<number, { step: number; data?: Partial<IWalletTransfer> }>;
   private activeUsers: Set<number>;
-
+  
   constructor(bot: Telegraf) {
     this.bot = bot;
     this.userState = new Map();
@@ -41,22 +41,21 @@ export class WalletTransferCommand implements ICommand {
       switch (userData.step) {
         case 1:
           userData.data!.walletAddress = message;
-          await ctx.reply('Enter amount:');
+          await ctx.reply('Enter amount');
           this.userState.set(userId, { step: 2, data: userData.data });
           break;
         case 2:
-          userData.data!.amount = message;
-          await ctx.reply('Enter purpose code:');
-          this.userState.set(userId, { step: 3, data: userData.data });
-          break;
-        case 3:
-          userData.data!.purposeCode = message;
-          await ctx.reply('Enter currency:');
-          this.userState.set(userId, { step: 4, data: userData.data });
-          break;
-        case 4:
-          userData.data!.currency = message;
-          await ctx.reply('Sending wallet transfer request...');
+          userData.data!.amount = message || userData.data!.amount;
+          userData.data!.purposeCode = 'SELF';
+          userData.data!.currency = 'USD';
+          
+          await ctx.reply(
+            '📝 Transfer Summary:\n' +
+            `Wallet Address: ${userData.data!.walletAddress}\n` +
+            `Amount: ${userData.data!.amount} ${userData.data!.currency}\n` +
+            `Purpose Code: ${userData.data!.purposeCode}\n\n` +
+            'Sending wallet transfer request...'
+          );
           
           try {
             const existingToken = await ctx.getToken();
@@ -70,11 +69,12 @@ export class WalletTransferCommand implements ICommand {
             const response = await transferApi.walletTransfer(userData.data as IWalletTransfer);
             if (response && 'id' in response) {
               await ctx.reply(`✅ Transfer successful! Transaction ID: ${response.id}`);
-            } else {
-              await ctx.reply('❌ Transfer failed. Please try again.');
+            } else if('message' in response){
+              await ctx.reply(`Failed to fetch Details. Error Message : ${response.message}`)
             }
           } catch (error) {
-            await ctx.reply('⚠️ An error occurred while processing the transfer.');
+            console.error('Transfer error:', error);
+            await ctx.reply('An error occurred while processing the transfer.');
           }
           
           this.activeUsers.delete(userId);
@@ -97,7 +97,13 @@ export class WalletTransferCommand implements ICommand {
     
     const userId = ctx.from.id;
     this.activeUsers.add(userId);
-    this.userState.set(userId, { step: 1, data: {} });
+    this.userState.set(userId, { 
+      step: 1, 
+      data: {
+        purposeCode: 'self',
+        currency: 'USD'
+      } 
+    });
     
     await ctx.reply('Enter your wallet address:');
   };
