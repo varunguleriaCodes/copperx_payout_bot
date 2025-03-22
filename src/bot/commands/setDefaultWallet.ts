@@ -17,7 +17,7 @@ export class SetDefaultWalletCommand implements ICommand {
     }
     
     public execute = async (ctx: Context<Update>): Promise<void> => {
-        await ctx.reply('Please Choose the default Wallet:\nPolygon\nArbitrum\nBase\nStarknet');
+        await ctx.reply('Please choose the default Wallet by typing one of the following options:\nPolygon\nArbitrum\nBase\nStarknet');
         
         this.bot.use(async (ctx, next) => {
             if (ctx.message && 'text' in ctx.message) {
